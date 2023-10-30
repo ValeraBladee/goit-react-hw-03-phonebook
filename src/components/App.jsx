@@ -13,13 +13,28 @@ class App extends Component {
     ],
     filter: '',
   };
-  arrContacts = [...this.state.contacts];
+  // arrContacts = [...this.state.contacts];
+
+  componentDidMount() {
+    const dataLocalStorage = localStorage.getItem('contacts list');
+    const NewContactsList = JSON.parse(dataLocalStorage);
+    if (NewContactsList) {
+      this.setState({ contacts: NewContactsList });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const contacts = this.state.contacts;
+    if (contacts !== prevState.contacts) {
+      localStorage.setItem('contacts list', JSON.stringify(contacts));
+    }
+  }
 
   pushedContacts = newContact => {
-    this.arrContacts = [...this.state.contacts];
+    const arrContacts = [...this.state.contacts];
 
     const namePerson = newContact.name;
-    const condition = this.arrContacts.some(
+    const condition = arrContacts.some(
       contact => contact.name.toLowerCase() === namePerson.toLowerCase()
     );
 
@@ -36,12 +51,16 @@ class App extends Component {
   filterContacts = evt => {
     const param = evt.target.value;
     this.setState({ filter: param });
+  };
 
-    const filteredContacts = this.arrContacts.filter(contact => {
-      return contact.name.toLowerCase().includes(param.toLowerCase());
-    });
+  actualNames = () => {
+    const arrContacts = this.state.contacts;
+    const contacts = this.state.filter.toLowerCase();
 
-    this.setState({ contacts: filteredContacts });
+    const filteredContacts = arrContacts.filter(contact =>
+      contact.name.toLowerCase().includes(contacts)
+    );
+    return filteredContacts;
   };
 
   handlerContactDelete = evt => {
@@ -75,7 +94,7 @@ class App extends Component {
         />
         <ContactList
           deleteContact={this.handlerContactDelete}
-          contacts={this.state.contacts}
+          contacts={this.actualNames()}
         />
       </div>
     );
